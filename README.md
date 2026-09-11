@@ -104,10 +104,11 @@ a reload.
 
 ## Install
 
-Not on any store. Build it and load it unpacked.
+Not published yet. The pipeline below is ready, but the listing itself still has
+to be created by hand. Until then, build it and load it unpacked.
 
 ```sh
-node build.mjs
+npm run build
 ```
 
 Chrome: `chrome://extensions`, turn on Developer mode, Load unpacked, pick
@@ -115,6 +116,31 @@ Chrome: `chrome://extensions`, turn on Developer mode, Load unpacked, pick
 
 Firefox: `about:debugging#/runtime/this-firefox`, Load Temporary Add-on, pick
 `dist/firefox/manifest.json`.
+
+The same build also writes `dist/chrome.zip` and `dist/firefox.zip`, which are the
+packages a store wants.
+
+## Releasing
+
+`.github/workflows/publish.yml` publishes to the Chrome Web Store on a push to
+`main`, but only when the `version` in `package.json` differs from the previous
+commit. The store rejects a package whose version it already holds, so an
+unchanged version means the job does nothing rather than fails. A release is
+therefore a version bump, merged like any other change:
+
+```sh
+npm version patch --no-git-tag-version
+```
+
+It talks to version 2 of the Chrome Web Store API, since version 1 stops working
+on 15 October 2026, and authenticates as a service account so there is no refresh
+token to expire. The listing itself is entered by hand once, because V2 cannot
+create items and publishing fails until the dashboard's listing and privacy tabs
+are filled in. The copy to paste is in `store/listing.md` and the credentials the
+workflow needs are set up in `store/SETUP.md`.
+
+A manual run from the Actions tab skips the version comparison and publishes
+anyway, which is the retry path when a publish fails for a transient reason.
 
 ## Layout
 
@@ -124,17 +150,24 @@ src/content/curtain.js replaces the picture with the panel
 src/content/bridge.js  relays the on/off state into both worlds
 src/background.js      owns the toolbar button and the stored state
 src/icons.mjs          draws the icons at build time, no image dependencies
+src/zip.mjs            packs a built target, no archiver dependency
+src/crc32.mjs          the checksum both the png and the zip writer need
 manifest.config.mjs    one manifest, two targets
-build.mjs              emits dist/chrome and dist/firefox
+build.mjs              emits dist/chrome and dist/firefox, zipped
+scripts/publish-chrome.mjs  uploads and publishes to the Chrome Web Store
+scripts/version.mjs    tells the workflow whether the version moved
+store/                 the listing copy and the one-time setup
 test/                  node:test, no runner to install
 ```
 
 Nothing generated is committed. The icons are drawn into `dist` on every build,
 so there is no binary in the tree to drift out of sync with the code that made it.
 
-`storage` is the only permission, for remembering whether the switch is on. There
-are no host permissions: a content script with `world: "MAIN"` reaches the player
-object directly, so nothing needs `webRequest` or `web_accessible_resources`. The
+`storage` is the only permission, for remembering whether the switch is on. The
+manifest declares no `host_permissions`, because a content script with
+`world: "MAIN"` reaches the player object directly, so nothing needs `webRequest`
+or `web_accessible_resources`. The content scripts still match YouTube pages, and
+the store surfaces those match patterns as host access. The
 two worlds talk through bare `audio-only:enable` and `audio-only:disable` DOM
 events, which carry no payload and so need no cross-world cloning.
 
@@ -156,6 +189,19 @@ events, which carry no payload and so need no cross-world cloning.
 - YouTube Music is a different story from YouTube. Tracks with an art track play
   with `videoWidth === 0`, genuinely audio-only, but only for catalogue music, and
   the web player has no global switch for it.
+- A Google OAuth consent screen left in Testing hands out refresh tokens that die
+  after seven days, so a publish pipeline built on one breaks every week. A service
+  account sidesteps the whole problem, which is why this uses one. Its JSON key
+  signs an RS256 assertion that `node:crypto` can produce with no dependency.
+- A zip is a short enough format to write by hand when the only alternative is a
+  dependency. Local header, deflate-raw body, central directory, end record. Fixing
+  the timestamps to the 1980 DOS epoch makes the archive reproducible, so the same
+  tree always packs to the same bytes.
+
+## Privacy
+
+Nothing is collected. One boolean lives in `storage.local` and never leaves the
+machine. [PRIVACY.md](PRIVACY.md) spells it out.
 
 ## License
 

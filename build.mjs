@@ -2,6 +2,7 @@ import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { targets } from './manifest.config.mjs';
 import { ICON_SIZES, ICON_VARIANTS, renderIcon } from './src/icons.mjs';
+import { zip } from './src/zip.mjs';
 
 const root = new URL('./', import.meta.url);
 
@@ -23,7 +24,18 @@ export const build = async (dist) => {
   return Object.keys(targets);
 };
 
+export const packageTargets = async (dist) => {
+  const packaged = [];
+  for (const target of Object.keys(targets)) {
+    await writeFile(new URL(`${target}.zip`, dist), await zip(new URL(`${target}/`, dist)));
+    packaged.push(target);
+  }
+  return packaged;
+};
+
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const built = await build(new URL('dist/', root));
+  const dist = new URL('dist/', root);
+  const built = await build(dist);
   for (const target of built) console.log(`built dist/${target}`);
+  for (const target of await packageTargets(dist)) console.log(`packaged dist/${target}.zip`);
 }

@@ -1,0 +1,41 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-chrome
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: release
+        run: node scripts/version.mjs "${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+      - if: steps.release.outputs.changed == 'true'
+        run: npm test
+      - if: steps.release.outputs.changed == 'true'
+        run: npm run build
+      - if: steps.release.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-${{ steps.release.outputs.version }}
+          path: dist/firefox.zip
+      - if: steps.release.outputs.changed == 'true'
+        run: node scripts/publish-chrome.mjs dist/chrome.zip
+        env:
+          CHROME_SERVICE_ACCOUNT_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_KEY }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
