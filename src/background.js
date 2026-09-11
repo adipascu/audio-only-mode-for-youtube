@@ -21,9 +21,13 @@ const readState = async () => {
 };
 
 extension.action.onClicked.addListener(async () => {
-  const enabled = !(await readState());
-  await extension.storage.local.set({ [STATE_KEY]: enabled });
-  await paint(enabled);
+  await extension.storage.local.set({ [STATE_KEY]: !(await readState()) });
+});
+
+extension.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && STATE_KEY in changes) {
+    paint(changes[STATE_KEY].newValue !== false);
+  }
 });
 
 extension.runtime.onInstalled.addListener(async () => paint(await readState()));
