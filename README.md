@@ -61,12 +61,23 @@ is a player too, so it gets the same panel while it is running.
 
 ## The switch
 
-The toolbar button is the whole interface. Click it to turn Earshot off, click it
-again to turn it back on. The icon greys out while it is off, and that is the only
-feedback there is: no popup, no options page, no settings.
+The toolbar button is the whole interface, and it is labelled with what you are
+getting rather than with a switch position:
 
-It starts switched on, the state is global rather than per site, and it survives a
-restart. Flipping it takes effect on open tabs immediately, without a reload.
+| Badge | Means |
+| --- | --- |
+| **AUDIO** on orange | The picture is off and the video is held at 144p |
+| **VIDEO** on grey | The video is playing normally |
+
+"On" and "off" are deliberately avoided. For an extension whose job is to disable
+something, "off" is ambiguous: it could mean the extension is off, or the video is.
+Naming the outcome removes the question. The tooltip says the same thing in a
+sentence and states what a click will do.
+
+Clicking swaps between the two. There is no popup, no options page and no
+settings. The state is global rather than per site, it starts on audio, it
+survives a restart, and flipping it takes effect on open tabs immediately without
+a reload.
 
 ## Install
 
@@ -89,10 +100,10 @@ src/page/radio.js      holds the player at 144p, runs in the page world
 src/content/curtain.js replaces the picture with the panel
 src/content/bridge.js  relays the on/off state into both worlds
 src/background.js      owns the toolbar button and the stored state
-src/icons.mjs         draws the icons at build time, no image dependencies
-manifest.config.mjs   one manifest, two targets
-build.mjs             emits dist/chrome and dist/firefox
-test/                 node:test, no runner to install
+src/icons.mjs          draws the icons at build time, no image dependencies
+manifest.config.mjs    one manifest, two targets
+build.mjs              emits dist/chrome and dist/firefox
+test/                  node:test, no runner to install
 ```
 
 Nothing generated is committed. The icons are drawn into `dist` on every build,

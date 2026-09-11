@@ -26,9 +26,15 @@ export const createExtensionApi = (stored = {}) => {
   const clickListeners = [];
   const icons = [];
   const titles = [];
+  const badgeTexts = [];
+  const badgeBackgrounds = [];
+  const badgeForegrounds = [];
   return {
     icons,
     titles,
+    badgeTexts,
+    badgeBackgrounds,
+    badgeForegrounds,
     stored,
     action: {
       setIcon: async (details) => {
@@ -36,6 +42,15 @@ export const createExtensionApi = (stored = {}) => {
       },
       setTitle: async (details) => {
         titles.push(details.title);
+      },
+      setBadgeText: async (details) => {
+        badgeTexts.push(details.text);
+      },
+      setBadgeBackgroundColor: async (details) => {
+        badgeBackgrounds.push(details.color);
+      },
+      setBadgeTextColor: async (details) => {
+        badgeForegrounds.push(details.color);
       },
       onClicked: {
         addListener: (listener) => clickListeners.push(listener)
@@ -60,7 +75,10 @@ export const createExtensionApi = (stored = {}) => {
       onInstalled: { addListener: () => {} },
       onStartup: { addListener: () => {} }
     },
-    click: () => Promise.all(clickListeners.map((listener) => listener())),
+    click: async () => {
+      await Promise.all(clickListeners.map((listener) => listener()));
+      await new Promise((resolve) => setImmediate(resolve));
+    },
     changeStorage: (changes, area) => changeListeners.forEach((listener) => listener(changes, area))
   };
 };
