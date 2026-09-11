@@ -1,0 +1,19 @@
+{
+  "name": "earshot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Listen to YouTube without paying for the video",
+  "license": "EUPL-1.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adipascu/earshot.git"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
