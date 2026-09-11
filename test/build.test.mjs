@@ -15,7 +15,7 @@ const filesNamedBy = (manifest) => [
   ...(manifest.background.scripts ?? [manifest.background.service_worker])
 ];
 
-const directory = await mkdtemp(join(tmpdir(), 'earshot-build-'));
+const directory = await mkdtemp(join(tmpdir(), 'audio-only-mode-build-'));
 const dist = pathToFileURL(`${directory}/`);
 const built = await build(dist);
 

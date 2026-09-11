@@ -1,8 +1,8 @@
 (() => {
   const extension = globalThis.browser ?? globalThis.chrome;
 
-  const STYLE_ID = 'earshot-curtain-style';
-  const PANEL_CLASS = 'earshot-curtain';
+  const STYLE_ID = 'audio-only-curtain-style';
+  const PANEL_CLASS = 'audio-only-curtain';
   const PAGE_EVENTS = ['loadstart', 'canplay', 'yt-navigate-finish', 'yt-player-updated'];
 
   const STYLE = `
@@ -29,8 +29,8 @@
     line-height: 1.5;
   }
   .${PANEL_CLASS} p { margin: 0; max-width: 42em; }
-  .${PANEL_CLASS} .earshot-curtain-lead { font-size: 1.5em; font-weight: 500; }
-  .${PANEL_CLASS} .earshot-curtain-note { color: #aaa; font-size: 0.9em; }
+  .${PANEL_CLASS} .audio-only-curtain-lead { font-size: 1.5em; font-weight: 500; }
+  .${PANEL_CLASS} .audio-only-curtain-note { color: #aaa; font-size: 0.9em; }
   .${PANEL_CLASS} button {
     font: inherit;
     font-weight: 500;
@@ -52,12 +52,12 @@
     panel.className = PANEL_CLASS;
 
     const lead = document.createElement('p');
-    lead.className = 'earshot-curtain-lead';
+    lead.className = 'audio-only-curtain-lead';
     lead.textContent = 'Audio only';
 
     const body = document.createElement('p');
     body.textContent =
-      'Earshot is holding this video at its lowest quality and keeping the picture off, so the tab downloads sound instead of pictures.';
+      'Audio Only Mode for YouTube is holding this video at its lowest quality and keeping the picture off. A small video stream still downloads, because YouTube will not start the player without one.';
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -67,8 +67,9 @@
     });
 
     const note = document.createElement('p');
-    note.className = 'earshot-curtain-note';
-    note.textContent = 'That switches Earshot off everywhere until you turn it back on from the toolbar.';
+    note.className = 'audio-only-curtain-note';
+    note.textContent =
+      'That switches audio only mode off everywhere until you turn it back on from the toolbar.';
 
     panel.append(lead, body, button, note);
     return panel;
@@ -95,12 +96,12 @@
 
   let enabled = false;
 
-  document.addEventListener('earshot:enable', () => {
+  document.addEventListener('audio-only:enable', () => {
     enabled = true;
     draw();
   });
 
-  document.addEventListener('earshot:disable', () => {
+  document.addEventListener('audio-only:disable', () => {
     enabled = false;
     erase();
   });

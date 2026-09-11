@@ -1,15 +1,16 @@
-# Earshot
+# Audio Only Mode for YouTube
 
-Listen to YouTube without paying for the video. Earshot pins the player to its
-lowest video quality, so a tab you are only listening to stops pulling megabytes
-of pictures nobody is looking at.
+Listen to YouTube without the video. A browser extension for Chrome and Firefox
+that pins the player to its lowest quality and covers the picture, so a tab you
+are only listening to stops pulling megabytes of images nobody is looking at. On
+the video measured below, that is 85% less data.
 
 ## What it costs to watch a video you are not watching
 
 Sizes for one 3:33 video, taken from the `contentLength` YouTube publishes for each
 format on 11 September 2026. Auto quality picked 1080p AV1 on a normal window.
 
-| Track | Default | Earshot |
+| Track | Default | Audio only mode |
 | --- | --- | --- |
 | Video | 29.01 MB (1080p AV1, itag 399) | 1.44 MB (144p AV1, itag 394) |
 | Audio | 3.27 MB (Opus, itag 251) | 3.27 MB (Opus, itag 251) |
@@ -20,7 +21,7 @@ same Opus stream plays either way. The saving grows with whatever your default
 quality would have been, since the 1440p and 2160p formats of that same video are
 144 MB and 342 MB.
 
-Measure it live rather than taking the table on trust. With Earshot loaded,
+Measure it live rather than taking the table on trust. With the extension loaded,
 `document.querySelector('#movie_player').getPlaybackQuality()` returns `tiny` and
 the `<video>` element reports 256x144. Byte counters sampled over a few seconds
 will not agree with the table, because the player buffers far ahead of playback.
@@ -31,22 +32,44 @@ It cannot be, on today's web player. YouTube moved desktop playback to server-si
 ABR, and the consequences are easy to verify in a console on any watch page:
 
 - `streamingData.adaptiveFormats` entries no longer carry a `url` or a
-  `signatureCipher`. There is only a `serverAbrStreamingUrl`, so the trick the
-  older extensions use, lifting the audio stream URL and assigning it to the
-  `<video>` element, has nothing left to lift.
+  `signatureCipher`. There is only a `serverAbrStreamingUrl`, so an approach that
+  lifts the audio stream URL and assigns it to the `<video>` element has nothing
+  left to lift.
 - Filtering every `video/*` entry out of the player response makes the player give
   up with "Your browser can't play this video".
 - So does making `MediaSource.isTypeSupported` reject every video codec.
 
 The player will not start without a video track. The smallest one is 144p, so that
-is what Earshot asks for, and what is left is the audio you wanted plus a 144p
-video stream that YouTube will not let a client decline. On the video above that
-residue is 1.44 MB against 3.27 MB of audio.
+is what this asks for, and what is left is the audio you wanted plus a 144p video
+stream that YouTube will not let a client decline. On the video above that residue
+is 1.44 MB against 3.27 MB of audio.
+
+## How this compares
+
+The Firefox field, measured from the AMO API on 11 September 2026:
+
+| Add-on | Users | Rating | Last updated |
+| --- | --- | --- | --- |
+| Music Mode for YouTube | 3,010 | 4.3 | July 2026 |
+| Youtube audio_only | 1,174 | 3.5 | January 2024 |
+| Audio Only for YouTube | 1,165 | 3.4 | May 2025 |
+| YouTube Audio Mode | 209 | 4.1 | August 2026 |
+| Tube Audio Options+ | 136 | 4.1 | September 2026 |
+| Stream Audio Only | 133 | 3.4 | September 2024 |
+
+This extension sets a quality range on the player object and re-applies it when
+adaptive bitrate drifts off it, so it never needs a stream URL from the player
+response. An approach that reads the audio stream URL directly depends on a field
+the SABR player response no longer carries.
+
+Which approach each add-on above takes was not checked, so read the table as a map
+of the field rather than a verdict on any of them. Each has its own feature set,
+and Music Mode covers YouTube Music as well, which this does not.
 
 ## What you see instead of the video
 
 The player area goes flat black with a line saying the audio is playing without the
-picture, and a **Show video** button. That button switches Earshot off, which
+picture, and a **Show video** button. That button switches the extension off, which
 brings the picture back everywhere until you turn it on again from the toolbar.
 
 The original thumbnail is not used as a backdrop. YouTube's own cued-thumbnail
@@ -71,8 +94,8 @@ getting rather than with a switch position:
 
 "On" and "off" are deliberately avoided. For an extension whose job is to disable
 something, "off" is ambiguous: it could mean the extension is off, or the video is.
-Naming the outcome removes the question. The tooltip says the same thing in a
-sentence and states what a click will do.
+Naming the outcome avoids that. The tooltip says the same thing in a sentence,
+names the extension, and states what a click will do.
 
 Clicking swaps between the two. There is no popup, no options page and no
 settings. The state is global rather than per site, it starts on audio, it
@@ -81,7 +104,7 @@ a reload.
 
 ## Install
 
-Earshot is not on any store. Build it and load it unpacked.
+Not on any store. Build it and load it unpacked.
 
 ```sh
 node build.mjs
@@ -112,8 +135,8 @@ so there is no binary in the tree to drift out of sync with the code that made i
 `storage` is the only permission, for remembering whether the switch is on. There
 are no host permissions: a content script with `world: "MAIN"` reaches the player
 object directly, so nothing needs `webRequest` or `web_accessible_resources`. The
-two worlds talk through bare `earshot:enable` and `earshot:disable` DOM events,
-which carry no payload and so need no cross-world cloning.
+two worlds talk through bare `audio-only:enable` and `audio-only:disable` DOM
+events, which carry no payload and so need no cross-world cloning.
 
 ## Findings worth writing down
 
@@ -121,7 +144,7 @@ which carry no payload and so need no cross-world cloning.
   dance for talking to a page's own JavaScript. Chrome 111, Firefox 128.
 - `setPlaybackQualityRange('tiny', 'tiny')` is the only quality API that sticks.
   Setting it once is not enough, because adaptive bitrate raises the quality again,
-  so Earshot re-applies it on the player's own `onPlaybackQualityChange`.
+  so it is re-applied on the player's own `onPlaybackQualityChange`.
 - Two content scripts in the same isolated world share one global lexical scope, so
   a top-level `const` of the same name in both is a hard `SyntaxError` that kills
   the second script silently. Wrap every content script in an IIFE. A test runs the

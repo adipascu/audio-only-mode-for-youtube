@@ -15,14 +15,14 @@ const matches = ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*'];
 
 const base = {
   manifest_version: 3,
-  name: 'Earshot',
+  name: 'Audio Only Mode for YouTube',
   version,
   description,
   icons,
   permissions: ['storage'],
   action: {
     default_icon: icons,
-    default_title: 'Earshot'
+    default_title: 'Audio Only Mode for YouTube'
   },
   content_scripts: [
     {
@@ -53,7 +53,7 @@ export const targets = {
     ...base,
     browser_specific_settings: {
       gecko: {
-        id: 'earshot@pascu.be',
+        id: 'audio-only-mode@pascu.be',
         strict_min_version: '128.0'
       }
     },
