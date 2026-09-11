@@ -43,6 +43,22 @@ is what Earshot asks for, and what is left is the audio you wanted plus a 144p
 video stream that YouTube will not let a client decline. On the video above that
 residue is 1.44 MB against 3.27 MB of audio.
 
+## What you see instead of the video
+
+The player area goes flat black with a line saying the audio is playing without the
+picture, and a **Show video** button. That button switches Earshot off, which
+brings the picture back everywhere until you turn it on again from the toolbar.
+
+The original thumbnail is not used as a backdrop. YouTube's own cued-thumbnail
+overlay is hidden along with the video, so a paused tab shows the same plain panel
+rather than a still from the video.
+
+The panel sits inside the player at `z-index: 1`, below YouTube's control bar at
+`z-index: 59`, so play, pause, seek and volume keep working behind it. Everything
+outside the player is untouched: the feed, the sidebar and the thumbnails
+elsewhere on the page look exactly as they did. An inline hover preview in the feed
+is a player too, so it gets the same panel while it is running.
+
 ## The switch
 
 The toolbar button is the whole interface. Click it to turn Earshot off, click it
@@ -69,9 +85,10 @@ Firefox: `about:debugging#/runtime/this-firefox`, Load Temporary Add-on, pick
 ## Layout
 
 ```
-src/page/radio.js     holds the player at 144p, runs in the page world
-src/content/bridge.js relays the on/off state into the page world
-src/background.js     owns the toolbar button and the stored state
+src/page/radio.js      holds the player at 144p, runs in the page world
+src/content/curtain.js replaces the picture with the panel
+src/content/bridge.js  relays the on/off state into both worlds
+src/background.js      owns the toolbar button and the stored state
 src/icons.mjs         draws the icons at build time, no image dependencies
 manifest.config.mjs   one manifest, two targets
 build.mjs             emits dist/chrome and dist/firefox
@@ -94,6 +111,14 @@ which carry no payload and so need no cross-world cloning.
 - `setPlaybackQualityRange('tiny', 'tiny')` is the only quality API that sticks.
   Setting it once is not enough, because adaptive bitrate raises the quality again,
   so Earshot re-applies it on the player's own `onPlaybackQualityChange`.
+- Two content scripts in the same isolated world share one global lexical scope, so
+  a top-level `const` of the same name in both is a hard `SyntaxError` that kills
+  the second script silently. Wrap every content script in an IIFE. A test runs the
+  isolated scripts into one context to keep that from coming back.
+- Chrome ignores `--load-extension` on recent versions, with or without
+  `--disable-features=DisableLoadExtensionCommandLineSwitch`, so an automated clean
+  profile cannot load an unpacked build. Injecting the built files with
+  `Page.addScriptToEvaluateOnNewDocument` exercises the same code instead.
 - YouTube Music is a different story from YouTube. Tracks with an art track play
   with `videoWidth === 0`, genuinely audio-only, but only for catalogue music, and
   the web player has no global switch for it.

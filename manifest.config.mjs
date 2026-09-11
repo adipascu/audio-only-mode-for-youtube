@@ -34,7 +34,7 @@ const base = {
     },
     {
       matches,
-      js: ['content/bridge.js'],
+      js: ['content/curtain.js', 'content/bridge.js'],
       run_at: 'document_start',
       all_frames: true
     }

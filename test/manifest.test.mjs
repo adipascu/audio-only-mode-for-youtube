@@ -32,12 +32,12 @@ for (const [name, manifest] of Object.entries(targets)) {
     assert.equal(manifest.options_ui, undefined);
   });
 
-  test(`${name} manifest pairs a page-world script with an isolated bridge`, () => {
-    const [pageScript, bridge] = manifest.content_scripts;
+  test(`${name} manifest pairs a page-world script with isolated ones`, () => {
+    const [pageScript, isolated] = manifest.content_scripts;
     assert.deepEqual(pageScript.js, ['page/radio.js']);
     assert.equal(pageScript.world, 'MAIN');
-    assert.deepEqual(bridge.js, ['content/bridge.js']);
-    assert.equal(bridge.world, undefined);
+    assert.deepEqual(isolated.js, ['content/curtain.js', 'content/bridge.js']);
+    assert.equal(isolated.world, undefined);
     for (const script of manifest.content_scripts) {
       assert.equal(script.run_at, 'document_start');
       assert.equal(script.all_frames, true);
