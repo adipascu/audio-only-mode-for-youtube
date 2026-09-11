@@ -13,7 +13,9 @@
     );
 
   const enforce = (player) => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
     player.setPlaybackQualityRange(MINIMUM_QUALITY, MINIMUM_QUALITY);
   };
 
@@ -32,15 +34,26 @@
   };
 
   const scanForPlayers = () => {
-    if (!enabled) return;
-    for (const player of players()) manage(player);
+    if (!enabled) {
+      return;
+    }
+    for (const player of players()) {
+      manage(player);
+    }
   };
 
   const setEnabled = (next) => {
-    if (next === enabled) return;
+    if (next === enabled) {
+      return;
+    }
     enabled = next;
-    if (enabled) scanForPlayers();
-    else for (const player of players()) release(player);
+    if (enabled) {
+      scanForPlayers();
+    } else {
+      for (const player of players()) {
+        release(player);
+      }
+    }
   };
 
   document.addEventListener('audio-only:enable', () => setEnabled(true));

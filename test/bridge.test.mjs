@@ -31,7 +31,11 @@ test('follows the stored state when it changes', async () => {
   const { document, chrome } = await start({});
   chrome.changeStorage({ enabled: { newValue: false } }, 'local');
   chrome.changeStorage({ enabled: { newValue: true } }, 'local');
-  assert.deepEqual(document.dispatched, ['audio-only:enable', 'audio-only:disable', 'audio-only:enable']);
+  assert.deepEqual(document.dispatched, [
+    'audio-only:enable',
+    'audio-only:disable',
+    'audio-only:enable'
+  ]);
 });
 
 test('ignores changes to other keys and other storage areas', async () => {

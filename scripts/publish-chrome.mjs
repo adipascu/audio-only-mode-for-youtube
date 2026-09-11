@@ -47,7 +47,10 @@ export const signAssertion = (key, issuedAt) => {
       exp: issuedAt + TOKEN_LIFETIME_SECONDS
     })
   ].join('.');
-  const signature = createSign('RSA-SHA256').update(body).sign(key.private_key).toString('base64url');
+  const signature = createSign('RSA-SHA256')
+    .update(body)
+    .sign(key.private_key)
+    .toString('base64url');
   return `${body}.${signature}`;
 };
 
@@ -74,7 +77,9 @@ export const requestAccessToken = async (key, fetchImpl = fetch, issuedAt) => {
   });
   const payload = await parseBody(response);
   if (!response.ok || !payload.access_token) {
-    throw new Error(`token request failed: ${payload.error_description ?? describe(response, payload)}`);
+    throw new Error(
+      `token request failed: ${payload.error_description ?? describe(response, payload)}`
+    );
   }
   return payload.access_token;
 };
@@ -94,7 +99,9 @@ export const fetchStatus = async ({ token, name }, fetchImpl = fetch) => {
     { method: 'GET' },
     fetchImpl
   );
-  if (!response.ok) throw new Error(`status check failed: ${describe(response, payload)}`);
+  if (!response.ok) {
+    throw new Error(`status check failed: ${describe(response, payload)}`);
+  }
   return payload;
 };
 
@@ -105,10 +112,16 @@ export const uploadArchive = async ({ token, name, archive }, fetchImpl = fetch,
     { method: 'POST', body: archive },
     fetchImpl
   );
-  if (!response.ok) throw new Error(`upload failed: ${describe(response, payload)}`);
+  if (!response.ok) {
+    throw new Error(`upload failed: ${describe(response, payload)}`);
+  }
 
   let state = payload.uploadState;
-  for (let attempt = 0; state === 'UPLOAD_IN_PROGRESS' && attempt < UPLOAD_POLL_ATTEMPTS; attempt += 1) {
+  for (
+    let attempt = 0;
+    state === 'UPLOAD_IN_PROGRESS' && attempt < UPLOAD_POLL_ATTEMPTS;
+    attempt += 1
+  ) {
     await wait(UPLOAD_POLL_INTERVAL_MS);
     state = (await fetchStatus({ token, name }, fetchImpl)).uploadState;
   }
@@ -129,14 +142,20 @@ export const publishItem = async ({ token, name, publishType }, fetchImpl = fetc
     },
     fetchImpl
   );
-  if (!response.ok) throw new Error(`publish failed: ${describe(response, payload)}`);
+  if (!response.ok) {
+    throw new Error(`publish failed: ${describe(response, payload)}`);
+  }
   if (!PUBLISHED_STATES.includes(payload.state)) {
     throw new Error(`publish returned state ${payload.state ?? 'none'}`);
   }
   return payload;
 };
 
-export const publishChrome = async ({ environment, archive, publishType }, fetchImpl = fetch, wait) => {
+export const publishChrome = async (
+  { environment, archive, publishType },
+  fetchImpl = fetch,
+  wait
+) => {
   const { key, name } = readCredentials(environment);
   const token = await requestAccessToken(key, fetchImpl);
   await uploadArchive({ token, name, archive }, fetchImpl, wait);

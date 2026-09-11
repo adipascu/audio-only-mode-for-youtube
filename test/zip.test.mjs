@@ -50,7 +50,8 @@ const read = (archive) => {
       },
       body: inflateRawSync(archive.subarray(start, start + compressedSize))
     });
-    cursor += 46 + nameLength + archive.readUInt16LE(cursor + 30) + archive.readUInt16LE(cursor + 32);
+    cursor +=
+      46 + nameLength + archive.readUInt16LE(cursor + 30) + archive.readUInt16LE(cursor + 32);
   }
   return entries;
 };
@@ -61,10 +62,10 @@ await writeFile(new URL('nested/script.js', root), 'const value = 1;\n'.repeat(4
 
 test('writes an archive a reader can walk end to end', async () => {
   const entries = read(await zip(root));
-  assert.deepEqual(
-    entries.map((entry) => entry.name).sort(),
-    ['manifest.json', 'nested/script.js']
-  );
+  assert.deepEqual(entries.map((entry) => entry.name).sort(), [
+    'manifest.json',
+    'nested/script.js'
+  ]);
 });
 
 test('round-trips every file byte for byte', async () => {
@@ -122,7 +123,13 @@ test('leaves the utf-8 flag clear while every name is ascii', async () => {
 
 test('reads the file the name actually points at, not a url resolved from it', async () => {
   const awkward = await mkdtemp(join(tmpdir(), 'audio-only-mode-zip-names-'));
-  const names = ['plain.js', 'hash#fragment.js', 'query?string.js', 'percent%20encoded.js', 'a b.js'];
+  const names = [
+    'plain.js',
+    'hash#fragment.js',
+    'query?string.js',
+    'percent%20encoded.js',
+    'a b.js'
+  ];
   for (const name of names) {
     await writeFile(join(awkward, name), `body of ${name}\n`);
   }

@@ -9,7 +9,9 @@ const start = (initialPlayers = []) => {
   const document = createDocument(players);
   run(source, { document });
   const fire = (name) => {
-    for (const listener of document.listeners.get(name) ?? []) listener({ type: name });
+    for (const listener of document.listeners.get(name) ?? []) {
+      listener({ type: name });
+    }
   };
   return {
     document,

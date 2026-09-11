@@ -14,7 +14,9 @@ export const createDocument = (players = []) => {
     },
     dispatchEvent(event) {
       this.dispatched.push(event.type);
-      for (const listener of listeners.get(event.type) ?? []) listener(event);
+      for (const listener of listeners.get(event.type) ?? []) {
+        listener(event);
+      }
       return true;
     },
     querySelectorAll: () => players
@@ -64,7 +66,9 @@ export const createExtensionApi = (stored = {}) => {
           const changes = Object.fromEntries(
             Object.entries(values).map(([key, newValue]) => [key, { newValue }])
           );
-          for (const listener of changeListeners) listener(changes, 'local');
+          for (const listener of changeListeners) {
+            listener(changes, 'local');
+          }
         }
       },
       onChanged: {
@@ -97,7 +101,9 @@ export const createPlayer = () => {
       return (listeners.get(name) ?? []).length;
     },
     emit(name) {
-      for (const listener of listeners.get(name) ?? []) listener();
+      for (const listener of listeners.get(name) ?? []) {
+        listener();
+      }
     }
   };
 };
@@ -126,7 +132,9 @@ class FakeNode {
   }
 
   remove() {
-    if (!this.parent) return;
+    if (!this.parent) {
+      return;
+    }
     this.parent.children = this.parent.children.filter((child) => child !== this);
     this.parent = null;
   }
@@ -136,7 +144,9 @@ class FakeNode {
   }
 
   click() {
-    for (const listener of this.listeners.get('click') ?? []) listener();
+    for (const listener of this.listeners.get('click') ?? []) {
+      listener();
+    }
   }
 
   hasClass(name) {
@@ -183,7 +193,9 @@ export const createDomDocument = ({ players = 1 } = {}) => {
       listeners.set(name, [...(listeners.get(name) ?? []), listener]);
     },
     fire(name) {
-      for (const listener of listeners.get(name) ?? []) listener({ type: name });
+      for (const listener of listeners.get(name) ?? []) {
+        listener({ type: name });
+      }
     },
     dispatchEvent(event) {
       this.fire(event.type);

@@ -91,7 +91,9 @@
 
   const erase = () => {
     document.getElementById(STYLE_ID)?.remove();
-    for (const panel of document.querySelectorAll(`.${PANEL_CLASS}`)) panel.remove();
+    for (const panel of document.querySelectorAll(`.${PANEL_CLASS}`)) {
+      panel.remove();
+    }
   };
 
   let enabled = false;
@@ -110,7 +112,9 @@
     document.addEventListener(
       event,
       () => {
-        if (enabled) draw();
+        if (enabled) {
+          draw();
+        }
       },
       true
     );
