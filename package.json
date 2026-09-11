@@ -1,13 +1,13 @@
 {
-  "name": "earshot",
+  "name": "audio-only-mode-for-youtube",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Listen to YouTube without paying for the video",
+  "description": "Audio only mode for YouTube. Pins the player to 144p and hides the picture, so you download about 95% less video.",
   "license": "EUPL-1.2",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adipascu/earshot.git"
+    "url": "git+https://github.com/adipascu/audio-only-mode-for-youtube.git"
   },
   "scripts": {
     "build": "node build.mjs",

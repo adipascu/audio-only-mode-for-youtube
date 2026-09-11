@@ -8,6 +8,8 @@ const packageJson = JSON.parse(
 );
 
 const MATCHES = ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*'];
+const CHROME_NAME_LIMIT = 75;
+const CHROME_DESCRIPTION_LIMIT = 132;
 
 test('builds a manifest for chrome and firefox', () => {
   assert.deepEqual(Object.keys(targets), ['chrome', 'firefox']);
@@ -18,6 +20,17 @@ for (const [name, manifest] of Object.entries(targets)) {
     assert.equal(manifest.manifest_version, 3);
     assert.equal(manifest.version, packageJson.version);
     assert.equal(manifest.description, packageJson.description);
+  });
+
+  test(`${name} manifest stays inside the store limits on name and description`, () => {
+    assert.ok(
+      manifest.description.length <= CHROME_DESCRIPTION_LIMIT,
+      `description is ${manifest.description.length} characters, over the ${CHROME_DESCRIPTION_LIMIT} the stores accept`
+    );
+    assert.ok(
+      manifest.name.length <= CHROME_NAME_LIMIT,
+      `name is ${manifest.name.length} characters, over the ${CHROME_NAME_LIMIT} the stores accept`
+    );
   });
 
   test(`${name} manifest asks only for storage`, () => {
@@ -52,7 +65,7 @@ test('each browser gets the background flavour it supports', () => {
 });
 
 test('only firefox carries a gecko id', () => {
-  assert.equal(targets.firefox.browser_specific_settings.gecko.id, 'earshot@pascu.be');
+  assert.equal(targets.firefox.browser_specific_settings.gecko.id, 'audio-only-mode@pascu.be');
   assert.equal(targets.chrome.browser_specific_settings, undefined);
 });
 

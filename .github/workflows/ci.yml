@@ -17,5 +17,5 @@ jobs:
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
-          name: earshot-unpacked
+          name: audio-only-mode-unpacked
           path: dist/

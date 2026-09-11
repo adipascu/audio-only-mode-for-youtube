@@ -11,10 +11,10 @@ const start = ({ players = 1, stored = {} } = {}) => {
   return {
     document,
     chrome,
-    enable: () => document.fire('earshot:enable'),
-    disable: () => document.fire('earshot:disable'),
-    panels: () => document.querySelectorAll('.earshot-curtain'),
-    style: () => document.getElementById('earshot-curtain-style')
+    enable: () => document.fire('audio-only:enable'),
+    disable: () => document.fire('audio-only:disable'),
+    panels: () => document.querySelectorAll('.audio-only-curtain'),
+    style: () => document.getElementById('audio-only-curtain-style')
   };
 };
 
@@ -44,7 +44,8 @@ test('explains itself and offers a way out', () => {
   page.enable();
   const [panel] = page.panels();
   assert.match(panel.text(), /Audio only/);
-  assert.match(panel.text(), /Earshot is holding this video at its lowest quality/);
+  assert.match(panel.text(), /holding this video at its lowest quality/);
+  assert.match(panel.text(), /a small video stream still downloads/i);
   const button = panel.tree().find((node) => node.tagName === 'BUTTON');
   assert.equal(button.textContent, 'Show video');
 });

@@ -15,8 +15,8 @@ const start = (initialPlayers = []) => {
     document,
     fire,
     appear: (player) => players.push(player),
-    enable: () => fire('earshot:enable'),
-    disable: () => fire('earshot:disable')
+    enable: () => fire('audio-only:enable'),
+    disable: () => fire('audio-only:disable')
   };
 };
 
@@ -25,8 +25,8 @@ test('listens for the switch and for the events that surface a player', () => {
   assert.deepEqual(
     [...page.document.listeners.keys()],
     [
-      'earshot:enable',
-      'earshot:disable',
+      'audio-only:enable',
+      'audio-only:disable',
       'loadstart',
       'canplay',
       'yt-navigate-finish',

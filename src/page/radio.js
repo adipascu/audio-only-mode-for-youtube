@@ -43,8 +43,8 @@
     else for (const player of players()) release(player);
   };
 
-  document.addEventListener('earshot:enable', () => setEnabled(true));
-  document.addEventListener('earshot:disable', () => setEnabled(false));
+  document.addEventListener('audio-only:enable', () => setEnabled(true));
+  document.addEventListener('audio-only:disable', () => setEnabled(false));
 
   for (const event of PAGE_EVENTS) {
     document.addEventListener(event, scanForPlayers, true);

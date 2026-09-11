@@ -14,29 +14,29 @@ const start = async (stored) => {
 
 test('switches on when nothing has been stored yet', async () => {
   const { document } = await start({});
-  assert.deepEqual(document.dispatched, ['earshot:enable']);
+  assert.deepEqual(document.dispatched, ['audio-only:enable']);
 });
 
 test('switches on when the stored state says so', async () => {
   const { document } = await start({ enabled: true });
-  assert.deepEqual(document.dispatched, ['earshot:enable']);
+  assert.deepEqual(document.dispatched, ['audio-only:enable']);
 });
 
 test('switches off when the stored state says so', async () => {
   const { document } = await start({ enabled: false });
-  assert.deepEqual(document.dispatched, ['earshot:disable']);
+  assert.deepEqual(document.dispatched, ['audio-only:disable']);
 });
 
 test('follows the stored state when it changes', async () => {
   const { document, chrome } = await start({});
   chrome.changeStorage({ enabled: { newValue: false } }, 'local');
   chrome.changeStorage({ enabled: { newValue: true } }, 'local');
-  assert.deepEqual(document.dispatched, ['earshot:enable', 'earshot:disable', 'earshot:enable']);
+  assert.deepEqual(document.dispatched, ['audio-only:enable', 'audio-only:disable', 'audio-only:enable']);
 });
 
 test('ignores changes to other keys and other storage areas', async () => {
   const { document, chrome } = await start({});
   chrome.changeStorage({ somethingElse: { newValue: false } }, 'local');
   chrome.changeStorage({ enabled: { newValue: false } }, 'sync');
-  assert.deepEqual(document.dispatched, ['earshot:enable']);
+  assert.deepEqual(document.dispatched, ['audio-only:enable']);
 });

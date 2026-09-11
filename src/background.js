@@ -8,13 +8,14 @@ const BADGES = {
     text: 'AUDIO',
     background: '#ff6b35',
     foreground: '#1b1b1f',
-    title: 'Earshot: audio only. The picture is off and the video is held at 144p. Click to play video normally.'
+    title:
+      'Audio Only Mode for YouTube: the picture is off and the video is held at 144p. Click to play video normally.'
   },
   released: {
     text: 'VIDEO',
     background: '#5a5a63',
     foreground: '#ffffff',
-    title: 'Earshot: video is playing normally. Click to go back to audio only.'
+    title: 'Audio Only Mode for YouTube: the video is playing normally. Click to go back to audio only.'
   }
 };
 

@@ -4,7 +4,7 @@
   const STATE_KEY = 'enabled';
 
   const announce = (enabled) => {
-    document.dispatchEvent(new CustomEvent(enabled ? 'earshot:enable' : 'earshot:disable'));
+    document.dispatchEvent(new CustomEvent(enabled ? 'audio-only:enable' : 'audio-only:disable'));
   };
 
   extension.storage.local.get(STATE_KEY).then((stored) => announce(stored[STATE_KEY] !== false));
