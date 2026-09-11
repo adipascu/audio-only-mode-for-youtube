@@ -1,0 +1,138 @@
+# Chrome Web Store listing
+
+The dashboard fields, ready to paste. The API cannot set any of these, so they are
+filled in once by hand and only revisited when the copy changes.
+
+## Name
+
+```
+Audio Only Mode for YouTube
+```
+
+## Short description
+
+Comes from `package.json` and ships in the manifest, so edit it there rather than
+here. Chrome caps it at 132 characters and a test holds it under that.
+
+```
+Audio only mode for YouTube. Pins the player to 144p and hides the picture, so you download about 95% less video.
+```
+
+## Category
+
+```
+Functionality & UI
+```
+
+## Language
+
+```
+English (United States)
+```
+
+## Detailed description
+
+```
+Listen to YouTube without the video.
+
+This extension pins the YouTube player to its lowest quality and covers the picture, so a tab you are only listening to stops pulling megabytes of pictures nobody is looking at.
+
+
+WHAT IT SAVES
+
+Measured on one 3:33 video whose default quality was 1080p:
+
+  Video   29.01 MB  ->   1.44 MB
+  Audio    3.27 MB  ->   3.27 MB
+  Total   32.30 MB  ->   4.70 MB
+
+That is 95% off the video and 85% off the download as a whole. Audio is untouched, because the same Opus stream plays either way. The saving is larger when your default quality is higher.
+
+
+WHY IT IS NOT LITERALLY AUDIO-ONLY
+
+It cannot be, on today's YouTube web player. YouTube moved desktop playback to server-side adaptive bitrate, and the player will not start without a video track at all. The smallest one is 144p, so that is what this asks for. What is left is the audio you wanted plus a 144p stream the player will not let a client decline.
+
+This extension does not claim to remove the video stream entirely, because on the current player that is not possible. It makes the stream as small as the player allows and stops the picture being drawn.
+
+
+HOW IT WORKS
+
+One toolbar button. No popup, no options page, no settings.
+
+  AUDIO on orange   the picture is off and the video is held at 144p
+  VIDEO on grey     the video is playing normally
+
+Where the video was, you get a plain panel saying the audio is playing without the picture, and a button to bring the video back. Play, pause, seek and volume keep working behind it. The feed, the sidebar and the thumbnails are left alone. An inline preview that starts playing when you hover a thumbnail is a player too, so it gets the same panel while it runs.
+
+The setting is global rather than per site, it survives a restart, and switching it takes effect on open tabs straight away without a reload.
+
+
+PERMISSIONS
+
+Storage only, to remember whether the switch is on.
+
+The content scripts run on YouTube pages, and that is the whole of the access the extension has. It makes no network requests of its own, carries no analytics, and collects nothing.
+
+
+LIMITS
+
+Live streams are not supported. YouTube Music is not covered.
+
+
+OPEN SOURCE
+
+Licensed under the EUPL-1.2. The source, including the measurements above and how to reproduce them, is at:
+https://github.com/adipascu/audio-only-mode-for-youtube
+```
+
+## Privacy practices
+
+Single purpose:
+
+```
+Reduce the data a YouTube tab downloads by holding the player at its lowest video quality and hiding the picture, for people who are listening rather than watching.
+```
+
+Justification for `storage`:
+
+```
+Stores one boolean, the on or off position of the toolbar button, so the choice survives a browser restart. Nothing else is written and nothing is read back off the machine.
+```
+
+Justification for the host access on `youtube.com` and `youtube-nocookie.com`.
+The manifest declares no `host_permissions`, but the dashboard treats the
+`content_scripts` match patterns as host access and asks for this anyway:
+
+```
+The content scripts set the player's quality range and draw a panel over the video area. They run only on YouTube pages, read no page content, and make no network requests.
+```
+
+Data collection: leave all nine data-type boxes unticked, which is how "collects
+nothing" is declared. There is no box to tick for it. The public listing then
+renders "The developer has disclosed that it will not collect or use your data".
+
+Then certify all three disclosures, which are worded in the first person and are
+all required:
+
+- I do not sell or transfer user data to third parties, outside of the approved use cases
+- I do not use or transfer user data for purposes that are unrelated to my item's single purpose
+- I do not use or transfer user data to determine creditworthiness or for lending purposes
+
+Privacy policy URL:
+
+```
+https://github.com/adipascu/audio-only-mode-for-youtube/blob/main/PRIVACY.md
+```
+
+## Screenshots
+
+At least one is required and five are allowed, sized 1280x800 or 640x400. Two are
+worth having:
+
+1. A watch page with the extension on, showing the panel where the video was and
+   the AUDIO badge on the toolbar button.
+2. The same page with it off, so the two states sit side by side.
+
+These are not generated by the build. They have to be captured from a browser
+with the extension loaded.
