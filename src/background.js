@@ -15,7 +15,8 @@ const BADGES = {
     text: 'VIDEO',
     background: '#5a5a63',
     foreground: '#ffffff',
-    title: 'Audio Only Mode for YouTube: the video is playing normally. Click to go back to audio only.'
+    title:
+      'Audio Only Mode for YouTube: the video is playing normally. Click to go back to audio only.'
   }
 };
 

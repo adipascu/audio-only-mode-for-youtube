@@ -15,7 +15,10 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [, , previousRef] = process.argv;
   const current = await readFile(new URL('../package.json', import.meta.url), 'utf8');
   const changed = hasPreviousCommit(previousRef)
-    ? versionChanged(current, execFileSync('git', ['show', `${previousRef}:package.json`], { encoding: 'utf8' }))
+    ? versionChanged(
+        current,
+        execFileSync('git', ['show', `${previousRef}:package.json`], { encoding: 'utf8' })
+      )
     : true;
   console.log(`version=${versionOf(current)}`);
   console.log(`changed=${changed}`);

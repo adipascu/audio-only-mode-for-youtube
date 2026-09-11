@@ -25,6 +25,8 @@ jobs:
       - id: release
         run: node scripts/version.mjs "${{ github.event.before }}" >> "$GITHUB_OUTPUT"
       - if: steps.release.outputs.changed == 'true'
+        run: npm ci
+      - if: steps.release.outputs.changed == 'true'
         run: npm test
       - if: steps.release.outputs.changed == 'true'
         run: npm run build

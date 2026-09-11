@@ -164,8 +164,14 @@ test('reports an html error page instead of a json parse failure', async () => {
 
 test('reads the upload state back off the status endpoint', async () => {
   const fetchImpl = stubFetch([{ body: { uploadState: 'SUCCESS' } }]);
-  assert.equal((await fetchStatus({ token: 'granted', name: NAME }, fetchImpl)).uploadState, 'SUCCESS');
-  assert.equal(fetchImpl.calls[0].url, `https://chromewebstore.googleapis.com/v2/${NAME}:fetchStatus`);
+  assert.equal(
+    (await fetchStatus({ token: 'granted', name: NAME }, fetchImpl)).uploadState,
+    'SUCCESS'
+  );
+  assert.equal(
+    fetchImpl.calls[0].url,
+    `https://chromewebstore.googleapis.com/v2/${NAME}:fetchStatus`
+  );
 });
 
 test('treats going to review as a successful publish', async () => {

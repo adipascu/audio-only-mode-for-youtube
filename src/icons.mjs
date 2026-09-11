@@ -23,9 +23,13 @@ const insideRoundedSquare = (x, y) => {
 };
 
 const colourAt = (x, y, accent) => {
-  if (!insideRoundedSquare(x, y)) return TRANSPARENT;
+  if (!insideRoundedSquare(x, y)) {
+    return TRANSPARENT;
+  }
   const distance = Math.hypot(x - 0.5, y - 0.5);
-  if (distance <= SPINDLE_RADIUS || distance > DISC_RADIUS) return PLATE;
+  if (distance <= SPINDLE_RADIUS || distance > DISC_RADIUS) {
+    return PLATE;
+  }
   return accent;
 };
 
@@ -47,7 +51,9 @@ const samplePixel = (column, row, size, accent) => {
       coverage += weight;
     }
   }
-  if (coverage === 0) return TRANSPARENT;
+  if (coverage === 0) {
+    return TRANSPARENT;
+  }
   const samples = SAMPLES_PER_AXIS * SAMPLES_PER_AXIS;
   return [
     Math.round(red / coverage),

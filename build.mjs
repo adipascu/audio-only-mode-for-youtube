@@ -36,6 +36,10 @@ export const packageTargets = async (dist) => {
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const dist = new URL('dist/', root);
   const built = await build(dist);
-  for (const target of built) console.log(`built dist/${target}`);
-  for (const target of await packageTargets(dist)) console.log(`packaged dist/${target}.zip`);
+  for (const target of built) {
+    console.log(`built dist/${target}`);
+  }
+  for (const target of await packageTargets(dist)) {
+    console.log(`packaged dist/${target}.zip`);
+  }
 }

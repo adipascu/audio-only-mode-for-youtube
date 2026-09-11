@@ -3,9 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { targets } from '../manifest.config.mjs';
 
-const packageJson = JSON.parse(
-  await readFile(new URL('../package.json', import.meta.url), 'utf8')
-);
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 const MATCHES = ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*'];
 const CHROME_NAME_LIMIT = 75;

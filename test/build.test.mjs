@@ -27,9 +27,7 @@ test('builds every target', () => {
 
 for (const target of Object.keys(targets)) {
   test(`${target} bundle contains every file its manifest names`, async () => {
-    const manifest = JSON.parse(
-      await readFile(new URL(`${target}/manifest.json`, dist), 'utf8')
-    );
+    const manifest = JSON.parse(await readFile(new URL(`${target}/manifest.json`, dist), 'utf8'));
     for (const path of filesNamedBy(manifest)) {
       const details = await stat(new URL(`${target}/${path}`, dist));
       assert.ok(details.size > 0, `${target}/${path} is empty`);
@@ -37,9 +35,7 @@ for (const target of Object.keys(targets)) {
   });
 
   test(`${target} manifest on disk matches the config`, async () => {
-    const manifest = JSON.parse(
-      await readFile(new URL(`${target}/manifest.json`, dist), 'utf8')
-    );
+    const manifest = JSON.parse(await readFile(new URL(`${target}/manifest.json`, dist), 'utf8'));
     assert.deepEqual(manifest, targets[target]);
   });
 }

@@ -26,7 +26,10 @@ test('more than one script shares the isolated world', () => {
 test('the isolated-world scripts declare nothing that collides', () => {
   const context = freshContext();
   for (const [index, source] of sources.entries()) {
-    assert.doesNotThrow(() => vm.runInContext(source, context), `${isolatedScripts[index]} collided`);
+    assert.doesNotThrow(
+      () => vm.runInContext(source, context),
+      `${isolatedScripts[index]} collided`
+    );
   }
 });
 
