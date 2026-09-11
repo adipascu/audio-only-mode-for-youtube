@@ -8,8 +8,12 @@ const DISC_RADIUS = 0.34;
 const SPINDLE_RADIUS = 0.1;
 
 const PLATE = [0x1b, 0x1b, 0x1f, 0xff];
-const ACCENT = [0xff, 0x6b, 0x35, 0xff];
 const TRANSPARENT = [0, 0, 0, 0];
+
+export const ICON_VARIANTS = {
+  icon: [0xff, 0x6b, 0x35, 0xff],
+  off: [0x5a, 0x5a, 0x63, 0xff]
+};
 
 const insideRoundedSquare = (x, y) => {
   const dx = Math.max(CORNER_RADIUS - x, x - (1 - CORNER_RADIUS), 0);
@@ -17,14 +21,14 @@ const insideRoundedSquare = (x, y) => {
   return dx * dx + dy * dy <= CORNER_RADIUS * CORNER_RADIUS;
 };
 
-const colourAt = (x, y) => {
+const colourAt = (x, y, accent) => {
   if (!insideRoundedSquare(x, y)) return TRANSPARENT;
   const distance = Math.hypot(x - 0.5, y - 0.5);
   if (distance <= SPINDLE_RADIUS || distance > DISC_RADIUS) return PLATE;
-  return ACCENT;
+  return accent;
 };
 
-const samplePixel = (column, row, size) => {
+const samplePixel = (column, row, size, accent) => {
   const step = 1 / (size * SAMPLES_PER_AXIS);
   let red = 0;
   let green = 0;
@@ -34,7 +38,7 @@ const samplePixel = (column, row, size) => {
     for (let sampleX = 0; sampleX < SAMPLES_PER_AXIS; sampleX += 1) {
       const x = (column * SAMPLES_PER_AXIS + sampleX + 0.5) * step;
       const y = (row * SAMPLES_PER_AXIS + sampleY + 0.5) * step;
-      const [r, g, b, a] = colourAt(x, y);
+      const [r, g, b, a] = colourAt(x, y, accent);
       const weight = a / 255;
       red += r * weight;
       green += g * weight;
@@ -98,11 +102,12 @@ const encodePng = (size, pixels) => {
   ]);
 };
 
-export const renderIcon = (size) => {
+export const renderIcon = (size, variant = 'icon') => {
+  const accent = ICON_VARIANTS[variant];
   const pixels = Buffer.alloc(size * size * 4);
   for (let row = 0; row < size; row += 1) {
     for (let column = 0; column < size; column += 1) {
-      pixels.set(samplePixel(column, row, size), (row * size + column) * 4);
+      pixels.set(samplePixel(column, row, size, accent), (row * size + column) * 4);
     }
   }
   return encodePng(size, pixels);

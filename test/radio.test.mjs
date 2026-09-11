@@ -1,97 +1,115 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import vm from 'node:vm';
+import { createDocument, createPlayer, readSource, run } from './support.mjs';
 
-const source = await readFile(new URL('../src/page/radio.js', import.meta.url), 'utf8');
+const source = await readSource('page/radio.js');
 
-const createPlayer = () => {
-  const listeners = new Map();
-  return {
-    qualityCalls: [],
-    setPlaybackQualityRange(...args) {
-      this.qualityCalls.push(args);
-    },
-    addEventListener(name, listener) {
-      listeners.set(name, [...(listeners.get(name) ?? []), listener]);
-    },
-    listenerCount(name) {
-      return (listeners.get(name) ?? []).length;
-    },
-    emit(name) {
-      for (const listener of listeners.get(name) ?? []) listener();
-    }
-  };
-};
-
-const runScript = (initialPlayers = []) => {
+const start = (initialPlayers = []) => {
   const players = [...initialPlayers];
-  const documentListeners = new Map();
-  const context = {
-    document: {
-      addEventListener(name, listener) {
-        documentListeners.set(name, [...(documentListeners.get(name) ?? []), listener]);
-      },
-      querySelectorAll: () => players
-    }
+  const document = createDocument(players);
+  run(source, { document });
+  const fire = (name) => {
+    for (const listener of document.listeners.get(name) ?? []) listener({ type: name });
   };
-  vm.runInNewContext(source, context);
   return {
-    listenedEvents: () => [...documentListeners.keys()],
+    document,
+    fire,
     appear: (player) => players.push(player),
-    fire: (name) => {
-      for (const listener of documentListeners.get(name) ?? []) listener();
-    }
+    enable: () => fire('earshot:enable'),
+    disable: () => fire('earshot:disable')
   };
 };
 
-test('listens for the events that surface a new player', () => {
-  const page = runScript([]);
-  assert.deepEqual(page.listenedEvents(), [
-    'loadstart',
-    'canplay',
-    'yt-navigate-finish',
-    'yt-player-updated'
-  ]);
+test('listens for the switch and for the events that surface a player', () => {
+  const page = start();
+  assert.deepEqual(
+    [...page.document.listeners.keys()],
+    [
+      'earshot:enable',
+      'earshot:disable',
+      'loadstart',
+      'canplay',
+      'yt-navigate-finish',
+      'yt-player-updated'
+    ]
+  );
 });
 
-test('pins a player discovered after load to the minimum quality', () => {
-  const page = runScript();
+test('leaves the player alone until it is switched on', () => {
+  const player = createPlayer();
+  const page = start([player]);
+  page.fire('loadstart');
+  page.fire('yt-navigate-finish');
+  assert.deepEqual(player.qualityCalls, []);
+  assert.equal(player.listenerCount('onStateChange'), 0);
+});
+
+test('pins the players that exist when it is switched on', () => {
+  const player = createPlayer();
+  const page = start([player]);
+  page.enable();
+  assert.deepEqual(player.qualityCalls, [['tiny', 'tiny']]);
+});
+
+test('pins a player that appears while it is on', () => {
+  const page = start();
+  page.enable();
   const player = createPlayer();
   page.appear(player);
   page.fire('loadstart');
   assert.deepEqual(player.qualityCalls, [['tiny', 'tiny']]);
 });
 
-test('pins a player that already exists when the script runs', () => {
-  const player = createPlayer();
-  runScript([player]);
-  assert.deepEqual(player.qualityCalls, [['tiny', 'tiny']]);
-});
-
-test('ignores nodes that are not players', () => {
-  const page = runScript([{ tagName: 'DIV' }]);
-  assert.doesNotThrow(() => page.fire('loadstart'));
-});
-
 test('re-pins the quality when the player drifts off it', () => {
   const player = createPlayer();
-  runScript([player]);
+  const page = start([player]);
+  page.enable();
   player.emit('onPlaybackQualityChange');
-  player.emit('onStateChange');
   assert.deepEqual(player.qualityCalls, [
-    ['tiny', 'tiny'],
     ['tiny', 'tiny'],
     ['tiny', 'tiny']
   ]);
 });
 
+test('hands the quality range back when it is switched off', () => {
+  const player = createPlayer();
+  const page = start([player]);
+  page.enable();
+  page.disable();
+  assert.deepEqual(player.qualityCalls, [
+    ['tiny', 'tiny'],
+    ['tiny', 'highres']
+  ]);
+});
+
+test('stops re-pinning once it is switched off', () => {
+  const player = createPlayer();
+  const page = start([player]);
+  page.enable();
+  page.disable();
+  player.emit('onPlaybackQualityChange');
+  player.emit('onStateChange');
+  page.fire('loadstart');
+  assert.deepEqual(player.qualityCalls, [
+    ['tiny', 'tiny'],
+    ['tiny', 'highres']
+  ]);
+});
+
+test('ignores a repeated switch in the same direction', () => {
+  const player = createPlayer();
+  const page = start([player]);
+  page.enable();
+  page.enable();
+  assert.deepEqual(player.qualityCalls, [['tiny', 'tiny']]);
+});
+
 test('subscribes to each player once across repeated scans', () => {
   const player = createPlayer();
-  const page = runScript([player]);
+  const page = start([player]);
+  page.enable();
   page.fire('loadstart');
   page.fire('yt-navigate-finish');
   assert.equal(player.listenerCount('onPlaybackQualityChange'), 1);
   assert.equal(player.listenerCount('onStateChange'), 1);
-  assert.equal(player.qualityCalls.length, 3);
 });

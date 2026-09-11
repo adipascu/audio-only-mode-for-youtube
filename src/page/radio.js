@@ -1,12 +1,24 @@
 (() => {
   const MINIMUM_QUALITY = 'tiny';
+  const UNRESTRICTED_RANGE = ['tiny', 'highres'];
   const PLAYER_EVENTS = ['onPlaybackQualityChange', 'onStateChange'];
   const PAGE_EVENTS = ['loadstart', 'canplay', 'yt-navigate-finish', 'yt-player-updated'];
 
   const managed = new WeakSet();
+  let enabled = false;
+
+  const players = () =>
+    [...document.querySelectorAll('.html5-video-player')].filter(
+      (node) => typeof node.setPlaybackQualityRange === 'function'
+    );
 
   const enforce = (player) => {
+    if (!enabled) return;
     player.setPlaybackQualityRange(MINIMUM_QUALITY, MINIMUM_QUALITY);
+  };
+
+  const release = (player) => {
+    player.setPlaybackQualityRange(...UNRESTRICTED_RANGE);
   };
 
   const manage = (player) => {
@@ -20,16 +32,21 @@
   };
 
   const scanForPlayers = () => {
-    for (const node of document.querySelectorAll('.html5-video-player')) {
-      if (typeof node.setPlaybackQualityRange === 'function') {
-        manage(node);
-      }
-    }
+    if (!enabled) return;
+    for (const player of players()) manage(player);
   };
+
+  const setEnabled = (next) => {
+    if (next === enabled) return;
+    enabled = next;
+    if (enabled) scanForPlayers();
+    else for (const player of players()) release(player);
+  };
+
+  document.addEventListener('earshot:enable', () => setEnabled(true));
+  document.addEventListener('earshot:disable', () => setEnabled(false));
 
   for (const event of PAGE_EVENTS) {
     document.addEventListener(event, scanForPlayers, true);
   }
-
-  scanForPlayers();
 })();

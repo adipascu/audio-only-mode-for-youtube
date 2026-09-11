@@ -11,19 +11,32 @@ const icons = {
   128: 'icons/icon-128.png'
 };
 
+const matches = ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*'];
+
 const base = {
   manifest_version: 3,
   name: 'Earshot',
   version,
   description,
   icons,
+  permissions: ['storage'],
+  action: {
+    default_icon: icons,
+    default_title: 'Earshot'
+  },
   content_scripts: [
     {
-      matches: ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*'],
+      matches,
       js: ['page/radio.js'],
       run_at: 'document_start',
       all_frames: true,
       world: 'MAIN'
+    },
+    {
+      matches,
+      js: ['content/bridge.js'],
+      run_at: 'document_start',
+      all_frames: true
     }
   ]
 };
@@ -31,7 +44,10 @@ const base = {
 export const targets = {
   chrome: {
     ...base,
-    minimum_chrome_version: '111'
+    minimum_chrome_version: '111',
+    background: {
+      service_worker: 'background.js'
+    }
   },
   firefox: {
     ...base,
@@ -40,6 +56,9 @@ export const targets = {
         id: 'earshot@pascu.be',
         strict_min_version: '128.0'
       }
+    },
+    background: {
+      scripts: ['background.js']
     }
   }
 };

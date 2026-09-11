@@ -43,6 +43,15 @@ is what Earshot asks for, and what is left is the audio you wanted plus a 144p
 video stream that YouTube will not let a client decline. On the video above that
 residue is 1.44 MB against 3.27 MB of audio.
 
+## The switch
+
+The toolbar button is the whole interface. Click it to turn Earshot off, click it
+again to turn it back on. The icon greys out while it is off, and that is the only
+feedback there is: no popup, no options page, no settings.
+
+It starts switched on, the state is global rather than per site, and it survives a
+restart. Flipping it takes effect on open tabs immediately, without a reload.
+
 ## Install
 
 Earshot is not on any store. Build it and load it unpacked.
@@ -60,19 +69,23 @@ Firefox: `about:debugging#/runtime/this-firefox`, Load Temporary Add-on, pick
 ## Layout
 
 ```
-src/page/radio.js    the whole behaviour, injected into the page world
-src/icons.mjs        draws the icons at build time, no image dependencies
-manifest.config.mjs  one manifest, two targets
-build.mjs            emits dist/chrome and dist/firefox
-test/                node:test, no runner to install
+src/page/radio.js     holds the player at 144p, runs in the page world
+src/content/bridge.js relays the on/off state into the page world
+src/background.js     owns the toolbar button and the stored state
+src/icons.mjs         draws the icons at build time, no image dependencies
+manifest.config.mjs   one manifest, two targets
+build.mjs             emits dist/chrome and dist/firefox
+test/                 node:test, no runner to install
 ```
 
 Nothing generated is committed. The icons are drawn into `dist` on every build,
 so there is no binary in the tree to drift out of sync with the code that made it.
 
-The extension asks for no permissions at all. It declares no host permissions, no
-`storage`, no `webRequest`. A content script with `world: "MAIN"` reaches the
-player object directly, which is all the behaviour needs.
+`storage` is the only permission, for remembering whether the switch is on. There
+are no host permissions: a content script with `world: "MAIN"` reaches the player
+object directly, so nothing needs `webRequest` or `web_accessible_resources`. The
+two worlds talk through bare `earshot:enable` and `earshot:disable` DOM events,
+which carry no payload and so need no cross-world cloning.
 
 ## Findings worth writing down
 
