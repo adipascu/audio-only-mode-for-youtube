@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createExtensionApi, readSource, run } from './support.mjs';
+import { createExtensionApi, readSource, run, settle } from './support.mjs';
 
 const source = await readSource('background.js');
 
@@ -9,6 +9,25 @@ const start = (stored = {}) => {
   run(source, { chrome });
   return chrome;
 };
+
+const startAndSettle = async (stored = {}) => {
+  const chrome = start(stored);
+  await settle();
+  await settle();
+  return chrome;
+};
+
+test('paints the badge as soon as the worker runs, with no event to prompt it', async () => {
+  const chrome = await startAndSettle();
+  assert.equal(chrome.badgeTexts.at(-1), 'AUDIO');
+  assert.equal(chrome.icons.at(-1)[16], 'icons/icon-16.png');
+});
+
+test('paints the stored state, not a default, when the worker restarts', async () => {
+  const chrome = await startAndSettle({ enabled: false });
+  assert.equal(chrome.badgeTexts.at(-1), 'VIDEO');
+  assert.equal(chrome.icons.at(-1)[16], 'icons/off-16.png');
+});
 
 test('starts pinning audio and releases the video on the first click', async () => {
   const chrome = start();

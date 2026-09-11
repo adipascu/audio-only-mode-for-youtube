@@ -47,5 +47,9 @@ extension.storage.onChanged.addListener((changes, area) => {
   }
 });
 
-extension.runtime.onInstalled.addListener(async () => paint(await readState()));
-extension.runtime.onStartup.addListener(async () => paint(await readState()));
+const repaintFromStorage = async () => paint(await readState());
+
+extension.runtime.onInstalled.addListener(repaintFromStorage);
+extension.runtime.onStartup.addListener(repaintFromStorage);
+
+repaintFromStorage();
