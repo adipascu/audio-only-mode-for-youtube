@@ -10,11 +10,11 @@ the video measured below, that is 85% less data.
 Sizes for one 3:33 video, taken from the `contentLength` YouTube publishes for each
 format on 11 September 2026. Auto quality picked 1080p AV1 on a normal window.
 
-| Track | Default | Audio only mode |
-| --- | --- | --- |
+| Track | Default                        | Audio only mode              |
+| ----- | ------------------------------ | ---------------------------- |
 | Video | 29.01 MB (1080p AV1, itag 399) | 1.44 MB (144p AV1, itag 394) |
-| Audio | 3.27 MB (Opus, itag 251) | 3.27 MB (Opus, itag 251) |
-| Total | 32.3 MB | 4.7 MB |
+| Audio | 3.27 MB (Opus, itag 251)       | 3.27 MB (Opus, itag 251)     |
+| Total | 32.3 MB                        | 4.7 MB                       |
 
 95% off the video, 85% off the download as a whole, and audio is untouched: the
 same Opus stream plays either way. The saving grows with whatever your default
@@ -48,14 +48,14 @@ is 1.44 MB against 3.27 MB of audio.
 
 The Firefox field, measured from the AMO API on 11 September 2026:
 
-| Add-on | Users | Rating | Last updated |
-| --- | --- | --- | --- |
-| Music Mode for YouTube | 3,010 | 4.3 | July 2026 |
-| Youtube audio_only | 1,174 | 3.5 | January 2024 |
-| Audio Only for YouTube | 1,165 | 3.4 | May 2025 |
-| YouTube Audio Mode | 209 | 4.1 | August 2026 |
-| Tube Audio Options+ | 136 | 4.1 | September 2026 |
-| Stream Audio Only | 133 | 3.4 | September 2024 |
+| Add-on                 | Users | Rating | Last updated   |
+| ---------------------- | ----- | ------ | -------------- |
+| Music Mode for YouTube | 3,010 | 4.3    | July 2026      |
+| Youtube audio_only     | 1,174 | 3.5    | January 2024   |
+| Audio Only for YouTube | 1,165 | 3.4    | May 2025       |
+| YouTube Audio Mode     | 209   | 4.1    | August 2026    |
+| Tube Audio Options+    | 136   | 4.1    | September 2026 |
+| Stream Audio Only      | 133   | 3.4    | September 2024 |
 
 This extension sets a quality range on the player object and re-applies it when
 adaptive bitrate drifts off it, so it never needs a stream URL from the player
@@ -87,10 +87,10 @@ is a player too, so it gets the same panel while it is running.
 The toolbar button is the whole interface, and it is labelled with what you are
 getting rather than with a switch position:
 
-| Badge | Means |
-| --- | --- |
+| Badge               | Means                                            |
+| ------------------- | ------------------------------------------------ |
 | **AUDIO** on orange | The picture is off and the video is held at 144p |
-| **VIDEO** on grey | The video is playing normally |
+| **VIDEO** on grey   | The video is playing normally                    |
 
 "On" and "off" are deliberately avoided. For an extension whose job is to disable
 something, "off" is ambiguous: it could mean the extension is off, or the video is.
@@ -157,11 +157,34 @@ build.mjs              emits dist/chrome and dist/firefox, zipped
 scripts/publish-chrome.mjs  uploads and publishes to the Chrome Web Store
 scripts/version.mjs    tells the workflow whether the version moved
 store/                 the listing copy and the one-time setup
-test/                  node:test, no runner to install
+eslint.config.mjs      the lint rules, scoped per area
+test/                  node:test, no separate runner
 ```
 
 Nothing generated is committed. The icons are drawn into `dist` on every build,
 so there is no binary in the tree to drift out of sync with the code that made it.
+
+## Working on it
+
+```sh
+npm ci
+npm test          # node:test, including probes that the lint rules still bite
+npm run lint      # eslint
+npm run format    # prettier, or format:check to only report
+npm run build     # dist/chrome and dist/firefox, plus the zips
+```
+
+The extension ships with no dependency at all, and the build that produces it
+pulls in nothing either. The dependencies in `package.json` are the development
+toolchain, and none of them reaches `dist`.
+
+Lint rules are scoped by what a file is. The build path bans `Date`,
+`Math.random` and `localeCompare`, because a build has to be byte-reproducible
+and collation changes with the machine's locale. `src/background.js` is held to
+the globals a service worker actually has, so a `document` reference cannot pass
+lint and then fail at runtime. `test/eslint-config.test.mjs` resolves the real
+config for each path and proves every one of those bans still fires, which is how
+a rule that reads strict but resolves to `off` gets caught.
 
 `storage` is the only permission, for remembering whether the switch is on. The
 manifest declares no `host_permissions`, because a content script with
