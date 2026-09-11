@@ -1,7 +1,7 @@
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { targets } from './manifest.config.mjs';
-import { ICON_SIZES, renderIcon } from './src/icons.mjs';
+import { ICON_SIZES, ICON_VARIANTS, renderIcon } from './src/icons.mjs';
 
 const root = new URL('./', import.meta.url);
 
@@ -11,8 +11,12 @@ export const build = async (dist) => {
     const out = new URL(`${target}/`, dist);
     await mkdir(new URL('icons/', out), { recursive: true });
     await cp(new URL('src/page/', root), new URL('page/', out), { recursive: true });
-    for (const size of ICON_SIZES) {
-      await writeFile(new URL(`icons/icon-${size}.png`, out), renderIcon(size));
+    await cp(new URL('src/content/', root), new URL('content/', out), { recursive: true });
+    await cp(new URL('src/background.js', root), new URL('background.js', out));
+    for (const variant of Object.keys(ICON_VARIANTS)) {
+      for (const size of ICON_SIZES) {
+        await writeFile(new URL(`icons/${variant}-${size}.png`, out), renderIcon(size, variant));
+      }
     }
     await writeFile(new URL('manifest.json', out), `${JSON.stringify(manifest, null, 2)}\n`);
   }
